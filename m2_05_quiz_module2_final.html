@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 2 Final Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #c0d1cd; --green-dark: #9bb5af;
+            --purple: #d5cae0; --purple-dark: #b8a9c7;
+            --turquoise: #bfe5e7; --turquoise-dark: #9dd4d7;
+            --grey-bg: #f5f6f4; --grey-light: #eaebe8;
+            --text-primary: #2d3748; --text-secondary: #4a5568; --text-muted: #718096;
+            --white: #ffffff; --correct: #48bb78; --incorrect: #f56565;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--grey-bg); min-height: 100vh; padding: 40px 20px; color: var(--text-primary); line-height: 1.6; }
+        .container { max-width: 720px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 32px; background-color: var(--text-primary); padding: 32px 24px; border-radius: 12px; color: var(--white); }
+        .header-label { display: inline-block; background-color: rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 14px; border-radius: 4px; margin-bottom: 16px; }
+        .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; }
+        .header p { font-size: 0.95rem; opacity: 0.9; }
+        .progress-bar { background-color: var(--white); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .progress-text { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; }
+        .progress-track { height: 8px; background-color: var(--grey-light); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--green-dark); border-radius: 4px; transition: width 0.3s ease; }
+        .question-card { background-color: var(--white); border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: none; }
+        .question-card.active { display: block; }
+        .question-meta { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .question-number { display: inline-block; background-color: var(--text-primary); color: var(--white); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+        .question-topic { display: inline-block; background-color: var(--turquoise); color: var(--text-primary); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; }
+        .question-text { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; line-height: 1.5; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option { padding: 16px 20px; border: 2px solid var(--grey-light); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem; color: var(--text-secondary); }
+        .option:hover:not(.disabled) { border-color: var(--green-dark); background-color: rgba(192, 209, 205, 0.15); }
+        .option.selected { border-color: var(--green-dark); background-color: var(--green); }
+        .option.correct { border-color: var(--correct); background-color: rgba(72, 187, 120, 0.15); }
+        .option.incorrect { border-color: var(--incorrect); background-color: rgba(245, 101, 101, 0.15); }
+        .option.disabled { cursor: default; }
+        .feedback { margin-top: 20px; padding: 16px; border-radius: 8px; display: none; }
+        .feedback.correct { display: block; background-color: rgba(72, 187, 120, 0.15); border: 1px solid var(--correct); }
+        .feedback.incorrect { display: block; background-color: rgba(245, 101, 101, 0.15); border: 1px solid var(--incorrect); }
+        .feedback-title { font-weight: 600; margin-bottom: 6px; }
+        .feedback.correct .feedback-title { color: var(--correct); }
+        .feedback.incorrect .feedback-title { color: var(--incorrect); }
+        .feedback-text { font-size: 0.9rem; color: var(--text-secondary); }
+        .btn-container { margin-top: 24px; display: flex; justify-content: flex-end; }
+        .btn { background-color: var(--text-primary); color: var(--white); border: none; padding: 12px 28px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .btn:hover { background-color: var(--text-secondary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .results { background-color: var(--white); border-radius: 12px; padding: 32px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: none; }
+        .results.active { display: block; }
+        .results-score { font-size: 3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .results-label { font-size: 1rem; color: var(--text-muted); margin-bottom: 24px; }
+        .results-message { background-color: var(--green); padding: 20px; border-radius: 8px; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 20px; }
+        .results-breakdown { text-align: left; background-color: var(--grey-light); padding: 20px; border-radius: 8px; }
+        .results-breakdown h4 { font-size: 0.9rem; margin-bottom: 12px; color: var(--text-primary); }
+        .topic-score { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--grey-bg); font-size: 0.85rem; }
+        .topic-score:last-child { border-bottom: none; }
+        .topic-name { color: var(--text-secondary); }
+        .topic-result { font-weight: 600; color: var(--text-primary); }
+        @media (max-width: 600px) { body { padding: 24px 16px; } .header { padding: 24px 20px; } .header h1 { font-size: 1.5rem; } .question-card { padding: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-label">Module 2 Final Assessment</div>
+            <h1>Measuring and Managing Performance</h1>
+            <p>Test your understanding of all Module 2 concepts</p>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-text">Question <span id="current-q">1</span> of <span id="total-q">8</span></div>
+            <div class="progress-track"><div class="progress-fill" id="progress" style="width: 12.5%"></div></div>
+        </div>
+        <div id="quiz-container"></div>
+        <div class="results" id="results">
+            <div class="results-score"><span id="score">0</span>/<span id="total">8</span></div>
+            <div class="results-label">Questions Correct</div>
+            <div class="results-message" id="results-message"></div>
+            <div class="results-breakdown">
+                <h4>Performance by Topic</h4>
+                <div id="topic-breakdown"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const questions = [
+            { topic: "Financial Statements", question: "What is the primary purpose of the statement of cash flows?", options: ["To show the company's assets and liabilities", "To measure profitability over a period", "To reconcile accounting profit with actual cash movements", "To calculate shareholder equity"], correct: 2, feedback: "The statement of cash flows tracks actual cash moving in and out of the firm, reconciling accounting profit with cash reality across operating, investing, and financing activities." },
+            { topic: "Financial Statements", question: "A company reports strong net income but declining cash. What might explain this?", options: ["The company is paying too much in taxes", "Heavy investment spending or slow receivables collection", "The balance sheet is incorrect", "Shareholders are withdrawing funds"], correct: 1, feedback: "A profitable firm can face cash shortages due to heavy capital expenditures (investing activities) or working capital increases like slow collections from customers." },
+            { topic: "Financial Ratios", question: "Which ratio category helps assess whether a firm can meet its short-term obligations?", options: ["Profitability ratios", "Efficiency ratios", "Leverage ratios", "Liquidity ratios"], correct: 3, feedback: "Liquidity ratios (like Current Ratio and Quick Ratio) gauge the firm's short-term solvency — its ability to meet near-term obligations." },
+            { topic: "Financial Ratios", question: "A grocery chain has high asset turnover but low profit margins. Is this unusual?", options: ["Yes, this indicates poor performance", "No, this is typical for high-volume, low-margin businesses", "Yes, turnover and margins should be similar", "No, but only if leverage is also high"], correct: 1, feedback: "Different business models produce different ratio profiles. High-volume retailers typically have high turnover but thin margins — interpretation always depends on context." },
+            { topic: "ROE Decomposition", question: "If Ace Manufacturing has ROE of 21.6%, which scenario would improve it?", options: ["Decreasing sales while maintaining costs", "Reducing asset turnover", "Increasing debt (with appropriate returns)", "Lowering the profit margin"], correct: 2, feedback: "Increasing leverage (Equity Multiplier) can boost ROE — but it also increases financial risk. The ROE decomposition shows how margin, turnover, and leverage combine." },
+            { topic: "ROE Decomposition", question: "A firm's ROE increased but its profit margin declined. What likely happened?", options: ["The firm must have made an accounting error", "Asset turnover or leverage increased enough to offset the margin decline", "ROE cannot increase if margins fall", "The firm reduced its equity base"], correct: 1, feedback: "ROE = Margin × Turnover × Leverage. If margin falls but ROE rises, either turnover improved (using assets more efficiently) or leverage increased." },
+            { topic: "Working Capital", question: "What does a shorter cash conversion cycle indicate?", options: ["Higher profitability", "Faster recovery of cash from operations", "More leverage", "Lower sales volume"], correct: 1, feedback: "A shorter CCC means the firm recovers cash faster — from paying suppliers through inventory and receivables back to cash — improving liquidity and reducing financing needs." },
+            { topic: "Working Capital", question: "LOCI has a 55-day working capital gap while OCI has 0 days. What does this imply for LOCI?", options: ["LOCI is more profitable than OCI", "LOCI needs more short-term financing to support operations", "LOCI has better supplier relationships", "LOCI should increase its inventory levels"], correct: 1, feedback: "A 55-day gap means LOCI's cash goes out to suppliers well before it comes back from customers — requiring significant short-term financing to bridge operations." }
+        ];
+        const topicScores = {};
+        let currentQuestion = 0, score = 0, answered = false;
+        
+        questions.forEach(q => { if (!topicScores[q.topic]) topicScores[q.topic] = { correct: 0, total: 0 }; topicScores[q.topic].total++; });
+        
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-meta">
+                        <div class="question-number">Question ${currentQuestion + 1}</div>
+                        <div class="question-topic">${q.topic}</div>
+                    </div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">${q.options.map((opt, i) => `<div class="option" data-index="${i}">${opt}</div>`).join('')}</div>
+                    <div class="feedback" id="feedback"><div class="feedback-title"></div><div class="feedback-text">${q.feedback}</div></div>
+                    <div class="btn-container"><button class="btn" id="next-btn" disabled>${currentQuestion === questions.length - 1 ? 'See Results' : 'Next Question'}</button></div>
+                </div>`;
+            document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', selectOption));
+            document.getElementById('next-btn').addEventListener('click', nextQuestion);
+            document.getElementById('current-q').textContent = currentQuestion + 1;
+            document.getElementById('progress').style.width = ((currentQuestion + 1) / questions.length * 100) + '%';
+            answered = false;
+        }
+        function selectOption(e) {
+            if (answered) return;
+            answered = true;
+            const selected = parseInt(e.target.dataset.index);
+            const correct = questions[currentQuestion].correct;
+            const topic = questions[currentQuestion].topic;
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.add('disabled');
+                if (i === correct) opt.classList.add('correct');
+                if (i === selected && selected !== correct) opt.classList.add('incorrect');
+            });
+            const feedback = document.getElementById('feedback');
+            if (selected === correct) { score++; topicScores[topic].correct++; feedback.classList.add('correct'); feedback.querySelector('.feedback-title').textContent = '✓ Correct!'; }
+            else { feedback.classList.add('incorrect'); feedback.querySelector('.feedback-title').textContent = '✗ Not quite'; }
+            document.getElementById('next-btn').disabled = false;
+        }
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) renderQuestion();
+            else showResults();
+        }
+        function showResults() {
+            document.getElementById('quiz-container').innerHTML = '';
+            document.getElementById('results').classList.add('active');
+            document.getElementById('score').textContent = score;
+            document.getElementById('total').textContent = questions.length;
+            const pct = score / questions.length;
+            document.getElementById('results-message').textContent = pct >= 0.875 ? "Outstanding! You've mastered measuring and managing financial performance." : pct >= 0.75 ? "Excellent work! You have a strong grasp of Module 2 concepts." : pct >= 0.625 ? "Good progress! Review the areas where you need more practice." : "Keep learning! Review each section and try again.";
+            
+            let breakdown = '';
+            for (const [topic, scores] of Object.entries(topicScores)) {
+                breakdown += `<div class="topic-score"><span class="topic-name">${topic}</span><span class="topic-result">${scores.correct}/${scores.total}</span></div>`;
+            }
+            document.getElementById('topic-breakdown').innerHTML = breakdown;
+        }
+        renderQuestion();
+    </script>
+</body>
+</html>
