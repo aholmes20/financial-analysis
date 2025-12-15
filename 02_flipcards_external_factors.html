@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Factors and Financial Decisions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #c0d1cd;
+            --green-dark: #9bb5af;
+            --purple: #d5cae0;
+            --purple-dark: #b8a9c7;
+            --turquoise: #bfe5e7;
+            --turquoise-dark: #9dd4d7;
+            --grey-bg: #f5f6f4;
+            --grey-light: #eaebe8;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --white: #ffffff;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--grey-bg);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header { text-align: center; margin-bottom: 32px; }
+        
+        .header-label {
+            display: inline-block;
+            background-color: var(--turquoise);
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 14px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        
+        .context-box {
+            background-color: var(--white);
+            border-left: 3px solid var(--turquoise-dark);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        .context-box h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .context-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .instruction {
+            background-color: var(--white);
+            border-left: 3px solid var(--purple-dark);
+            padding: 14px 20px;
+            margin-bottom: 28px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        .instruction p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 700px) {
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+        
+        .flip-card {
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        .flip-card-front {
+            background-color: var(--text-primary);
+            color: var(--white);
+        }
+        
+        .flip-card[data-type="interest"] .flip-card-front { background-color: #5a6875; }
+        .flip-card[data-type="inflation"] .flip-card-front { background-color: #6b5b7a; }
+        .flip-card[data-type="industry"] .flip-card-front { background-color: #4a7c6f; }
+        .flip-card[data-type="currency"] .flip-card-front { background-color: #4a6b8a; }
+        
+        .flip-card-front .card-icon {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            font-size: 1.1rem;
+        }
+        
+        .flip-card-front h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .flip-card-front .factor-desc {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            margin-bottom: 14px;
+        }
+        
+        .flip-card-front .click-hint {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            position: absolute;
+            bottom: 14px;
+        }
+        
+        .flip-card-back {
+            background-color: var(--white);
+            color: var(--text-primary);
+            transform: rotateY(180deg);
+            border: 2px solid var(--grey-light);
+        }
+        
+        .flip-card-back h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .flip-card-back p {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        
+        .impact-tag {
+            display: inline-block;
+            background-color: var(--turquoise);
+            color: var(--text-primary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .flip-card-back .click-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            position: absolute;
+            bottom: 12px;
+        }
+        
+        .summary-section {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .summary-header h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .progress-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: var(--grey-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--green-dark);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .key-insight {
+            padding: 16px;
+            background-color: var(--green);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .key-insight.show { display: block; }
+        
+        .key-insight strong {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .key-insight p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-label">Section 1.5</div>
+            <h1>External Factors and Financial Decisions</h1>
+            <p>See how macroeconomic conditions influence Ace Manufacturing's choices</p>
+        </div>
+        
+        <div class="context-box">
+            <h3>Current Economic Context</h3>
+            <p>Interest rates are rising as the Bank of Canada tightens monetary policy. Inflation is elevated. The electric vehicle industry is in a growth stage with strong demand but increasing competition. How do these factors affect Ace's $8 million investment decision?</p>
+        </div>
+        
+        <div class="instruction">
+            <p><strong>Click each factor</strong> to see how it influences Ace's financial decisions.</p>
+        </div>
+        
+        <div class="cards-grid">
+            <div class="flip-card" data-type="interest" onclick="flipCard(this, 0)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">↑%</div>
+                        <h3>Rising Interest Rates</h3>
+                        <p class="factor-desc">Bank of Canada tightening policy</p>
+                        <span class="click-hint">Click to see impact</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Impact on Ace's Decisions</h4>
+                        <p>Higher borrowing costs (7% vs. potentially 5% before) make debt more expensive. Ace must adjust its financing mix and raise the project's "hurdle rate" — the minimum return required to justify the investment.</p>
+                        <span class="impact-tag">Affects: Financing & Investment</span>
+                        <span class="click-hint">Click to flip back</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flip-card" data-type="inflation" onclick="flipCard(this, 1)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">$↑</div>
+                        <h3>Inflation Trends</h3>
+                        <p class="factor-desc">Rising costs across the economy</p>
+                        <span class="click-hint">Click to see impact</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Impact on Ace's Decisions</h4>
+                        <p>Equipment and material costs may exceed projections. Ace must factor inflation into its cash flow forecasts and consider whether it can pass higher costs to customers through pricing.</p>
+                        <span class="impact-tag">Affects: Investment & Operating</span>
+                        <span class="click-hint">Click to flip back</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flip-card" data-type="industry" onclick="flipCard(this, 2)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">EV</div>
+                        <h3>Industry Growth Stage</h3>
+                        <p class="factor-desc">EV sector expanding rapidly</p>
+                        <span class="click-hint">Click to see impact</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Impact on Ace's Decisions</h4>
+                        <p>Strong demand supports the investment rationale — this is the right time to expand capacity. However, increasing competition means Ace must move quickly and invest in efficiency.</p>
+                        <span class="impact-tag">Affects: Investment & Growth</span>
+                        <span class="click-hint">Click to flip back</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flip-card" data-type="currency" onclick="flipCard(this, 3)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">FX</div>
+                        <h3>Currency Volatility</h3>
+                        <p class="factor-desc">CAD/EUR fluctuations</p>
+                        <span class="click-hint">Click to see impact</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Impact on Ace's Decisions</h4>
+                        <p>European equipment components expose Ace to exchange rate risk. A weaker Canadian dollar would increase costs. Ace should consider hedging strategies to lock in rates.</p>
+                        <span class="impact-tag">Affects: Risk & Operating</span>
+                        <span class="click-hint">Click to flip back</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-section">
+            <div class="summary-header">
+                <h3>Factors Explored</h3>
+                <span class="progress-count"><span id="flipped-count">0</span> of 4</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="key-insight" id="key-insight">
+                <strong>Key Insight</strong>
+                <p>External factors don't just add risk — they provide crucial information for better decisions. Smart financial managers continuously monitor interest rates, inflation, industry trends, and currency movements to time their decisions and manage exposures proactively.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let flippedCards = new Set();
+        const totalCards = 4;
+        
+        function flipCard(card, index) {
+            card.classList.toggle('flipped');
+            if (card.classList.contains('flipped')) {
+                flippedCards.add(index);
+            }
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const count = flippedCards.size;
+            const percentage = (count / totalCards) * 100;
+            document.getElementById('flipped-count').textContent = count;
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            if (count === totalCards) {
+                document.getElementById('key-insight').classList.add('show');
+            }
+        }
+    </script>
+</body>
+</html>
