@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Course Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d3748; --primary-light: #4a5568;
+            --green: #c0d1cd; --green-dark: #9bb5af;
+            --purple: #d5cae0; --purple-dark: #b8a9c7;
+            --grey-bg: #f5f6f4; --grey-light: #eaebe8;
+            --text-primary: #2d3748; --text-secondary: #4a5568; --text-muted: #718096;
+            --white: #ffffff; --correct: #48825d; --incorrect: #c45a5a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--grey-bg); min-height: 100vh; padding: 40px 20px; color: var(--text-primary); line-height: 1.6; }
+        .container { max-width: 820px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 32px; background: linear-gradient(135deg, var(--green), var(--purple)); padding: 40px 24px; border-radius: 12px; }
+        .header-label { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
+        .header p { font-size: 1rem; color: var(--text-secondary); }
+        
+        .quiz-meta { display: flex; justify-content: center; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+        .meta-item { background-color: var(--white); padding: 10px 18px; border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .meta-item span { font-weight: 700; color: var(--text-primary); }
+        
+        .progress-container { background-color: var(--white); border-radius: 8px; padding: 18px 22px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .progress-label { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
+        .progress-count { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+        .progress-bar { height: 10px; background-color: var(--grey-light); border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green-dark), var(--purple-dark)); border-radius: 5px; transition: width 0.4s ease; width: 0%; }
+        
+        .question-card { background-color: var(--white); border-radius: 12px; padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .question-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+        .question-number { background: linear-gradient(135deg, var(--green), var(--purple)); color: var(--text-primary); min-width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .question-text { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); flex: 1; padding-top: 3px; }
+        .question-module { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        
+        .options { display: flex; flex-direction: column; gap: 9px; }
+        .option { display: flex; align-items: center; padding: 13px 15px; border: 2px solid var(--grey-light); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background-color: var(--white); }
+        .option:hover:not(.disabled) { border-color: var(--primary-light); background-color: var(--grey-bg); }
+        .option.selected { border-color: var(--primary); background-color: var(--grey-bg); }
+        .option.correct { border-color: var(--correct); background-color: var(--green); }
+        .option.incorrect { border-color: var(--incorrect); background-color: #f8e8e8; }
+        .option.disabled { cursor: default; }
+        
+        .option-letter { width: 28px; height: 28px; border-radius: 6px; background-color: var(--grey-light); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.75rem; color: var(--text-secondary); margin-right: 12px; flex-shrink: 0; }
+        .option.selected .option-letter { background-color: var(--primary); color: var(--white); }
+        .option.correct .option-letter { background-color: var(--correct); color: var(--white); }
+        .option.incorrect .option-letter { background-color: var(--incorrect); color: var(--white); }
+        .option-text { flex: 1; font-size: 0.85rem; color: var(--text-primary); }
+        .option-icon { font-size: 0.95rem; margin-left: 10px; flex-shrink: 0; }
+        
+        .feedback { margin-top: 14px; padding: 12px 15px; border-radius: 8px; font-size: 0.8rem; line-height: 1.6; display: none; }
+        .feedback.correct { background-color: var(--green); border-left: 3px solid var(--correct); color: var(--text-primary); display: block; }
+        .feedback.incorrect { background-color: #f8e8e8; border-left: 3px solid var(--incorrect); color: var(--text-primary); display: block; }
+        
+        .submit-btn { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: var(--white); border: none; padding: 14px 32px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; width: 100%; margin-top: 24px; }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .submit-btn:disabled { background: var(--grey-light); color: var(--text-muted); cursor: not-allowed; transform: none; }
+        
+        .results-card { background-color: var(--white); border-radius: 12px; padding: 40px 28px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: none; margin-top: 24px; }
+        .results-card.show { display: block; }
+        .score-circle { width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; background: linear-gradient(135deg, var(--green), var(--purple)); }
+        .score-circle.excellent { background: linear-gradient(135deg, #48825d, #c0d1cd); }
+        .score-circle.needs-work { background: linear-gradient(135deg, #c45a5a, #f8e8e8); }
+        .score-number { font-size: 2.2rem; font-weight: 700; color: var(--text-primary); }
+        .score-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+        .results-title { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+        .results-message { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+        .results-breakdown { background-color: var(--grey-bg); border-radius: 8px; padding: 16px; margin: 20px 0; text-align: left; }
+        .breakdown-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--grey-light); }
+        .breakdown-item:last-child { border-bottom: none; }
+        .breakdown-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+        .breakdown-score { font-size: 0.85rem; color: var(--text-primary); font-weight: 700; }
+        
+        .retry-btn { display: inline-block; background-color: var(--white); color: var(--text-primary); border: 2px solid var(--text-primary); padding: 12px 32px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-decoration: none; }
+        .retry-btn:hover { background-color: var(--text-primary); color: var(--white); }
+        
+        @media (max-width: 600px) { 
+            body { padding: 24px 16px; } 
+            .header h1 { font-size: 1.6rem; }
+            .quiz-meta { flex-direction: column; gap: 8px; align-items: center; }
+            .question-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-label">Comprehensive Assessment</div>
+            <h1>Final Course Quiz</h1>
+            <p>Test your mastery of financial analysis fundamentals across all four modules</p>
+        </div>
+        
+        <div class="quiz-meta">
+            <div class="meta-item"><span>20</span> questions</div>
+            <div class="meta-item"><span>~25</span> minutes</div>
+            <div class="meta-item"><span>70%</span> passing score</div>
+            <div class="meta-item">All modules covered</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-header">
+                <span class="progress-label">Progress</span>
+                <span class="progress-count"><span id="answered-count">0</span> of 20 answered</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+        
+        <div id="quiz-container"></div>
+        
+        <button class="submit-btn" onclick="submitQuiz()" id="submit-btn" disabled>Submit Final Quiz</button>
+        
+        <div class="results-card" id="results-card">
+            <div class="score-circle" id="score-circle">
+                <span class="score-number" id="score-number">0/20</span>
+                <span class="score-label">Correct</span>
+            </div>
+            <h2 class="results-title" id="results-title"></h2>
+            <p class="results-message" id="results-message"></p>
+            <div class="results-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Module 1: The Big Picture</span>
+                    <span class="breakdown-score" id="module1-score">0/5</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Module 2: Measuring Performance</span>
+                    <span class="breakdown-score" id="module2-score">0/5</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Module 3: Projecting Growth</span>
+                    <span class="breakdown-score" id="module3-score">0/5</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">Module 4: Investment Decisions</span>
+                    <span class="breakdown-score" id="module4-score">0/5</span>
+                </div>
+            </div>
+            <button class="retry-btn" onclick="resetQuiz()">Retake Quiz</button>
+        </div>
+    </div>
+    
+    <script>
+        const questions = [
+            // MODULE 1 (5 questions)
+            {module: "Module 1", text: "What is the primary objective of financial management?", options: ["Maximizing short-term profits", "Maximizing firm value by considering magnitude, timing, and risk of cash flows", "Minimizing operational costs", "Increasing market share"], correct: 1, feedback: {correct: "Correct! Financial management aims to maximize firm value, not just profits. Value reflects three dimensions: how much (magnitude), when (timing), and how certain (risk) cash flows are.", incorrect: "Not quite. While profits and efficiency matter, the primary objective is maximizing firm value by considering cash flow magnitude, timing, and risk together."}},
+            
+            {module: "Module 1", text: "Which financial decision determines where the firm's capital is deployed?", options: ["Operating decisions", "Investment decisions", "Financing decisions", "Dividend decisions"], correct: 1, feedback: {correct: "Correct! Investment decisions determine where capital goes—which projects, assets, or strategies to fund. These create the foundation for value.", incorrect: "Not quite. Investment decisions determine capital deployment. Operating decisions manage day-to-day resources, while financing decisions determine how capital is raised."}},
+            
+            {module: "Module 1", text: "What two foundational considerations guide all three core financial decisions (investment, financing, operating)?", options: ["Profit and revenue", "Growth and risk", "Assets and liabilities", "Sales and expenses"], correct: 1, feedback: {correct: "Correct! Growth objectives determine how aggressively the firm expands, while risk considerations shape tolerance for leverage, volatility, and uncertainty. These foundations guide all decisions.", incorrect: "Not quite. Growth and risk are the two foundations. Growth determines expansion pace; risk shapes how much uncertainty the firm accepts across all decisions."}},
+            
+            {module: "Module 1", text: "How does the financial system support the flow of funds in an economy?", options: ["By printing more money when needed", "By connecting surplus units (savers) with deficit units (borrowers) through intermediaries and markets", "By government regulation alone", "By limiting international trade"], correct: 1, feedback: {correct: "Correct! The financial system channels funds from those with excess capital (savers) to those who need it (borrowers) through banks, markets, and other intermediaries.", incorrect: "Not quite. The financial system connects savers and borrowers through intermediaries and markets, facilitating efficient capital allocation across the economy."}},
+            
+            {module: "Module 1", text: "In the PEST framework, which factor would include labor regulations and minimum wage laws?", options: ["Political", "Economic", "Social", "Technological"], correct: 0, feedback: {correct: "Correct! Political factors include government policies, regulations, and legal frameworks like labor laws and minimum wage requirements.", incorrect: "Not quite. Labor regulations and minimum wage laws fall under Political factors in PEST analysis. These are government policies that shape the business environment."}},
+            
+            // MODULE 2 (5 questions)
+            {module: "Module 2", text: "A company can report positive net income but negative cash flow from operations. What is the most likely explanation?", options: ["The company is committing fraud", "Large increases in accounts receivable and inventory with slow collections", "The income statement is wrong", "The balance sheet doesn't balance"], correct: 1, feedback: {correct: "Correct! Revenue is recognized when earned (accrual accounting), not when cash is received. Rapid sales growth with credit terms and inventory buildup can create this gap.", incorrect: "Not quite. This is common in growth scenarios. Profit is recorded when sales are made, but cash lags if receivables and inventory grow faster than collections."}},
+            
+            {module: "Module 2", text: "ROE can be decomposed into three components. Which formula correctly represents the ROE decomposition?", options: ["ROE = Net Income / Equity", "ROE = (Net Income / Sales) × (Sales / Assets) × (Assets / Equity)", "ROE = Current Ratio × Debt Ratio", "ROE = Revenue Growth × Profit Margin"], correct: 1, feedback: {correct: "Correct! This is the DuPont decomposition: Profit Margin × Asset Turnover × Equity Multiplier. It reveals how margins, efficiency, and leverage drive returns.", incorrect: "Not quite. The DuPont formula breaks ROE into: (NI/Sales) × (Sales/Assets) × (Assets/Equity), revealing margin, turnover, and leverage effects."}},
+            
+            {module: "Module 2", text: "What does the Cash Conversion Cycle (CCC) measure?", options: ["How many days it takes to convert inventory to cash through sales and collections", "The company's profit margin", "The total amount of cash in the bank", "How quickly the company can raise external financing"], correct: 0, feedback: {correct: "Correct! CCC = Days Inventory + Days Receivables - Days Payables. It measures how long capital is tied up in operations before returning as cash.", incorrect: "Not quite. The CCC measures the time between paying suppliers and collecting from customers. It shows how long capital is locked in operations."}},
+            
+            {module: "Module 2", text: "If a firm's current ratio is 2.0 and its quick ratio is 1.2, what does this tell you?", options: ["The firm is insolvent", "Inventory represents a significant portion of current assets", "The firm has no debt", "Cash flow from operations is negative"], correct: 1, feedback: {correct: "Correct! The gap between current ratio (2.0) and quick ratio (1.2) indicates substantial inventory. Quick ratio excludes inventory from current assets.", incorrect: "Not quite. The 0.8 difference comes from inventory. Quick ratio = (Current Assets - Inventory) / Current Liabilities, so high inventory causes this gap."}},
+            
+            {module: "Module 2", text: "Which of the following would improve a firm's asset turnover ratio?", options: ["Increasing profit margins while keeping sales constant", "Generating the same level of sales with fewer assets", "Increasing leverage", "Paying higher dividends"], correct: 1, feedback: {correct: "Correct! Asset Turnover = Sales / Assets. Maintaining sales while reducing assets (better efficiency) increases this ratio, showing improved asset utilization.", incorrect: "Not quite. Asset turnover = Sales / Assets. Improving efficiency means generating more sales per dollar of assets, or the same sales with fewer assets."}},
+            
+            // MODULE 3 (5 questions)
+            {module: "Module 3", text: "What is the primary purpose of building pro forma financial statements?", options: ["To correct errors in historical statements", "To forecast future financing needs and assess growth feasibility", "To comply with accounting regulations", "To calculate taxes owed"], correct: 1, feedback: {correct: "Correct! Pro forma statements project future financial position to identify funding gaps (EFR) and ensure growth plans are financially feasible.", incorrect: "Not quite. Pro forma statements forecast the future, not fix the past. They help managers anticipate financing needs and test growth scenarios."}},
+            
+            {module: "Module 3", text: "If a firm's assets must grow by $2M, retained earnings will add $800K, and spontaneous liabilities will grow by $300K, what is the External Funding Required (EFR)?", options: ["$900K", "$1.1M", "$2.9M", "$3.1M"], correct: 0, feedback: {correct: "Correct! EFR = Asset Growth - Liability Growth - Retained Earnings = $2M - $300K - $800K = $900K. The firm needs $900K in external capital.", incorrect: "Not quite. EFR = $2M (assets needed) - $300K (spontaneous liabilities) - $800K (retained earnings) = $900K external funding required."}},
+            
+            {module: "Module 3", text: "A company has ROE of 20% and pays out 30% of earnings as dividends. What is its Sustainable Growth Rate (SGR)?", options: ["6%", "14%", "20%", "26%"], correct: 1, feedback: {correct: "Correct! SGR = ROE × Retention Ratio = 0.20 × (1 - 0.30) = 0.20 × 0.70 = 0.14 or 14%. This is the maximum self-financing growth rate.", incorrect: "Not quite. SGR = ROE × Retention Ratio = 20% × (1 - 30%) = 20% × 70% = 14%. The firm can grow 14% annually using only retained earnings."}},
+            
+            {module: "Module 3", text: "Which of the following would NOT reduce External Funding Required (EFR)?", options: ["Improving asset turnover", "Increasing profit margins", "Increasing dividend payout", "Slowing sales growth"], correct: 2, feedback: {correct: "Correct! Higher dividend payout reduces retention, meaning less internal financing. This increases EFR. The other options all reduce financing needs.", incorrect: "Not quite. Increasing dividend payout reduces retained earnings, which increases EFR. Higher payouts mean less internal financing available for growth."}},
+            
+            {module: "Module 3", text: "What is the key difference between sensitivity analysis and scenario analysis?", options: ["They are the same thing", "Sensitivity changes one variable at a time; scenario changes multiple variables together", "Sensitivity is for large companies; scenario is for small companies", "Scenarios are always pessimistic; sensitivity is always optimistic"], correct: 1, feedback: {correct: "Correct! Sensitivity isolates the impact of changing one assumption. Scenario analysis combines multiple changes to create realistic situations (best/base/worst cases).", incorrect: "Not quite. Sensitivity analysis changes one variable at a time to isolate its effect. Scenario analysis adjusts multiple variables together to create realistic situations."}},
+            
+            // MODULE 4 (5 questions)
+            {module: "Module 4", text: "Why is money received today worth more than the same amount received in the future?", options: ["Because of taxes", "Because of opportunity cost (can be invested), inflation, and risk", "Because banks charge fees", "Only due to inflation"], correct: 1, feedback: {correct: "Correct! Three factors create time value: opportunity cost (money can earn returns), inflation (erodes purchasing power), and risk (future is uncertain).", incorrect: "Not quite. Time value reflects three factors: opportunity cost (investment potential), inflation (purchasing power loss), and risk (uncertainty about the future)."}},
+            
+            {module: "Module 4", text: "If you invest $1,000 today at 8% annual interest for 3 years with annual compounding, what is the future value?", options: ["$1,240", "$1,259.71", "$1,080", "$1,166.40"], correct: 1, feedback: {correct: "Correct! FV = PV × (1 + r)^n = $1,000 × (1.08)³ = $1,000 × 1.259712 = $1,259.71. Compound interest creates $259.71 in growth.", incorrect: "Not quite. FV = $1,000 × (1.08)³ = $1,259.71. Remember to compound (multiply) by 1.08 three times, not just add 8% three times."}},
+            
+            {module: "Module 4", text: "What is the present value of a perpetuity that pays $5 per year if the discount rate is 10%?", options: ["$5", "$50", "$500", "$0.50"], correct: 1, feedback: {correct: "Correct! For a perpetuity, PV = Payment / r = $5 / 0.10 = $50. A perpetuity is an infinite stream of equal payments.", incorrect: "Not quite. For a perpetuity (infinite payments): PV = Payment / r = $5 / 0.10 = $50. Divide the annual payment by the discount rate."}},
+            
+            {module: "Module 4", text: "A project requires an initial investment of $100,000 and generates cash flows of $30,000 per year for 5 years. If the required return is 10%, what decision should be made based on NPV?", options: ["Reject (NPV is negative)", "Accept (NPV is positive at approximately $13,723)", "The project breaks even (NPV = 0)", "Insufficient information"], correct: 1, feedback: {correct: "Correct! PV of annuity = $30,000 × 3.7908 = $113,724. NPV = $113,724 - $100,000 = $13,724. Positive NPV means accept—the project creates value.", incorrect: "Not quite. PV of cash flows = $30K × 3.7908 (5-year annuity factor @ 10%) = $113,724. NPV = $113,724 - $100,000 = $13,724. Positive NPV means accept."}},
+            
+            {module: "Module 4", text: "Which capital budgeting method ignores the time value of money?", options: ["Net Present Value (NPV)", "Internal Rate of Return (IRR)", "Payback Period", "Profitability Index (PI)"], correct: 2, feedback: {correct: "Correct! Payback Period simply counts years until initial investment is recovered, ignoring discounting. It also ignores cash flows beyond payback.", incorrect: "Not quite. Payback Period doesn't discount future cash flows—it just adds them up until the initial cost is recovered. NPV, IRR, and PI all account for time value."}}
+        ];
+        
+        let selectedAnswers = new Array(questions.length).fill(-1);
+        let submitted = false;
+        
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = questions.map((q, i) => `
+                <div class="question-card" id="q${i}">
+                    <div class="question-module">${q.module}</div>
+                    <div class="question-header">
+                        <div class="question-number">${i+1}</div>
+                        <div class="question-text">${q.text}</div>
+                    </div>
+                    <div class="options">
+                        ${q.options.map((o, j) => `
+                            <div class="option" onclick="selectOption(${i},${j})">
+                                <span class="option-letter">${String.fromCharCode(65+j)}</span>
+                                <span class="option-text">${o}</span>
+                                <span class="option-icon"></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${i}"></div>
+                </div>
+            `).join('');
+        }
+        
+        function selectOption(q, o) {
+            if (submitted) return;
+            document.querySelectorAll(`#q${q} .option`).forEach((el, i) => el.classList.toggle('selected', i === o));
+            selectedAnswers[q] = o;
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const answered = selectedAnswers.filter(a => a !== -1).length;
+            document.getElementById('answered-count').textContent = answered;
+            document.getElementById('progress-fill').style.width = (answered / questions.length * 100) + '%';
+            document.getElementById('submit-btn').disabled = answered < questions.length;
+        }
+        
+        function submitQuiz() {
+            if (submitted) return;
+            submitted = true;
+            
+            let totalScore = 0;
+            let moduleScores = {1: 0, 2: 0, 3: 0, 4: 0};
+            let moduleQuestions = {1: 0, 2: 0, 3: 0, 4: 0};
+            
+            questions.forEach((q, i) => {
+                const moduleNum = parseInt(q.module.split(' ')[1]);
+                moduleQuestions[moduleNum]++;
+                
+                const card = document.getElementById(`q${i}`);
+                const opts = card.querySelectorAll('.option');
+                const fb = document.getElementById(`feedback-${i}`);
+                
+                opts.forEach(o => o.classList.add('disabled'));
+                
+                if (selectedAnswers[i] === q.correct) {
+                    totalScore++;
+                    moduleScores[moduleNum]++;
+                    opts[selectedAnswers[i]].classList.add('correct');
+                    opts[selectedAnswers[i]].querySelector('.option-icon').textContent = '✓';
+                    fb.className = 'feedback correct';
+                    fb.textContent = q.feedback.correct;
+                } else {
+                    opts[selectedAnswers[i]].classList.add('incorrect');
+                    opts[selectedAnswers[i]].querySelector('.option-icon').textContent = '✗';
+                    opts[q.correct].classList.add('correct');
+                    opts[q.correct].querySelector('.option-icon').textContent = '✓';
+                    fb.className = 'feedback incorrect';
+                    fb.textContent = q.feedback.incorrect;
+                }
+            });
+            
+            // Update results
+            const percentage = (totalScore / questions.length) * 100;
+            document.getElementById('score-number').textContent = `${totalScore}/${questions.length}`;
+            
+            const scoreCircle = document.getElementById('score-circle');
+            const resultsTitle = document.getElementById('results-title');
+            const resultsMessage = document.getElementById('results-message');
+            
+            if (percentage >= 90) {
+                scoreCircle.className = 'score-circle excellent';
+                resultsTitle.textContent = 'Outstanding Achievement!';
+                resultsMessage.textContent = 'You\'ve demonstrated exceptional mastery of financial analysis fundamentals. Your comprehensive understanding across all modules shows you\'re ready to apply these concepts in professional practice. Congratulations on your outstanding performance!';
+            } else if (percentage >= 70) {
+                scoreCircle.className = 'score-circle';
+                resultsTitle.textContent = 'Congratulations - You Pass!';
+                resultsMessage.textContent = 'You\'ve successfully demonstrated solid understanding of financial analysis fundamentals. You\'re ready to move forward and apply these concepts in your work. Review any areas where you missed questions to strengthen your knowledge further.';
+            } else {
+                scoreCircle.className = 'score-circle needs-work';
+                resultsTitle.textContent = 'Keep Learning!';
+                resultsMessage.textContent = `You scored ${percentage.toFixed(0)}%, which is below the 70% passing threshold. Review the course materials, especially in modules where you missed questions, and try again. Understanding these fundamentals is crucial for applying financial analysis effectively.`;
+            }
+            
+            // Module breakdown
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`module${i}-score`).textContent = `${moduleScores[i]}/${moduleQuestions[i]}`;
+            }
+            
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').textContent = 'Quiz Submitted';
+            document.getElementById('results-card').classList.add('show');
+            document.getElementById('results-card').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function resetQuiz() {
+            submitted = false;
+            selectedAnswers = new Array(questions.length).fill(-1);
+            document.getElementById('results-card').classList.remove('show');
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').textContent = 'Submit Final Quiz';
+            initQuiz();
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        initQuiz();
+    </script>
+</body>
+</html>
