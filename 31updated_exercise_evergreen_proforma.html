@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Example: Evergreen Outdoor Co.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #c0d1cd; --green-dark: #9bb5af;
+            --purple: #d5cae0; --purple-dark: #b8a9c7;
+            --turquoise: #bfe5e7; --turquoise-dark: #9dd4d7;
+            --grey-bg: #f5f6f4; --grey-light: #eaebe8;
+            --text-primary: #2d3748; --text-secondary: #4a5568; --text-muted: #718096;
+            --white: #ffffff; --correct: #48825d; --incorrect: #c45a5a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--grey-bg); min-height: 100vh; padding: 40px 20px; color: var(--text-primary); line-height: 1.6; }
+        .container { max-width: 920px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 32px; background-color: var(--green); padding: 32px 24px; border-radius: 12px; }
+        .header-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .header h1 { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .header p { font-size: 0.95rem; color: var(--text-secondary); }
+
+        .scenario-card { background-color: var(--white); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-left: 4px solid var(--green-dark); }
+        .scenario-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
+        .scenario-text { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0; }
+        .data-item { background-color: var(--green); padding: 12px 16px; border-radius: 8px; }
+        .data-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+        .data-value { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+        .statement-card { background-color: var(--white); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .statement-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--grey-light); }
+        .statement-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+        .statement-subtitle { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-top: 2px; }
+        .statement-year { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); background-color: var(--green); padding: 6px 12px; border-radius: 6px; }
+
+        .statement-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--grey-light); }
+        .statement-row.total { background-color: var(--grey-bg); padding: 14px 12px; margin: 8px -12px; border-radius: 6px; border: none; }
+        .statement-row.subtotal { background-color: var(--green); padding: 12px 12px; margin: 4px -12px; border-radius: 6px; border: none; font-weight: 600; }
+        .row-label { flex: 1; font-size: 0.9rem; color: var(--text-primary); }
+        .row-label.indent { padding-left: 20px; color: var(--text-secondary); }
+        .row-label.strong { font-weight: 600; }
+        .row-calculation { flex: 0 0 200px; font-size: 0.8rem; color: var(--text-muted); text-align: right; padding-right: 12px; font-family: 'Courier New', monospace; }
+        .row-value { flex: 0 0 120px; text-align: right; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); font-family: 'Courier New', monospace; }
+
+        .interactive-row { background-color: var(--turquoise); padding: 12px; margin: 4px -12px; border-radius: 6px; border: 2px dashed var(--turquoise-dark); }
+        .interactive-input { background-color: var(--white); border: 2px solid var(--turquoise-dark); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; text-align: right; font-family: 'Courier New', monospace; width: 120px; transition: all 0.2s ease; }
+        .interactive-input:focus { outline: none; border-color: var(--green-dark); }
+        .interactive-input.correct { border-color: var(--correct); background-color: var(--green); }
+        .interactive-input.incorrect { border-color: var(--incorrect); background-color: #f8e8e8; }
+
+        .calculate-btn { background-color: var(--green-dark); color: var(--text-primary); border: none; padding: 12px 28px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin: 16px 0; }
+        .calculate-btn:hover { background-color: var(--green); transform: translateY(-1px); }
+        .calculate-btn:disabled { background-color: var(--grey-light); color: var(--text-muted); cursor: not-allowed; transform: none; }
+
+        .insight-card { background-color: var(--turquoise); border-radius: 12px; padding: 20px; margin-top: 24px; border-left: 4px solid var(--turquoise-dark); }
+        .insight-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .insight-icon { font-size: 1.2rem; }
+        .insight-list { margin: 0; padding-left: 20px; }
+        .insight-list li { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.6; }
+
+        .assumption-card { background-color: var(--white); border-radius: 12px; padding: 20px; margin-top: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 2px solid var(--purple); }
+        .assumption-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
+        .assumption-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+        .feedback { padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; margin-top: 12px; display: none; }
+        .feedback.show { display: block; }
+        .feedback.correct { background-color: var(--green); border-left: 3px solid var(--correct); color: var(--text-primary); }
+        .feedback.partial { background-color: var(--purple); border-left: 3px solid var(--purple-dark); color: var(--text-primary); }
+
+        @media (max-width: 768px) { 
+            body { padding: 24px 16px; } 
+            .header h1 { font-size: 1.5rem; }
+            .data-grid { grid-template-columns: 1fr; }
+            .row-calculation { display: none; }
+            .row-value, .interactive-input { flex: 0 0 100px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-label">Section 3.2 Interactive Example</div>
+            <h1>Pro Forma Income Statement</h1>
+            <p>Build Evergreen Outdoor Co.'s forecast step by step</p>
+        </div>
+
+        <div class="scenario-card">
+            <div class="scenario-title">📊 The Scenario</div>
+            <div class="scenario-text">
+                Evergreen Outdoor Co. reported last year's sales of <strong>$10 million</strong> and expects sales to rise by <strong>20%</strong> next year—to <strong>$12 million</strong>. Using historical patterns and the proportional method, let's forecast next year's complete income statement.
+            </div>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Last Year Sales</div>
+                    <div class="data-value">$10.0M</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Expected Growth</div>
+                    <div class="data-value">20%</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Forecast Sales</div>
+                    <div class="data-value">$12.0M</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">COGS % of Sales</div>
+                    <div class="data-value">60%</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">SG&A % of Sales</div>
+                    <div class="data-value">20%</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Tax Rate</div>
+                    <div class="data-value">30%</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Interest Expense</div>
+                    <div class="data-value">$0.3M</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Dividend Payout</div>
+                    <div class="data-value">40%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="statement-card">
+            <div class="statement-header">
+                <div>
+                    <div class="statement-title">Evergreen Outdoor Co. - Pro Forma Income Statement</div>
+                    <div class="statement-subtitle">($ millions)</div>
+                </div>
+                <div class="statement-year">Next Year Forecast</div>
+            </div>
+
+            <div class="statement-row">
+                <div class="row-label strong">Sales Revenue</div>
+                <div class="row-calculation">Given</div>
+                <div class="row-value">$12.00</div>
+            </div>
+
+            <div class="statement-row interactive-row" id="row-cogs">
+                <div class="row-label indent">Cost of Goods Sold (COGS)</div>
+                <div class="row-calculation">60% × $12.0M</div>
+                <input type="text" id="input-cogs" class="interactive-input" placeholder="?" onkeypress="handleEnter(event, 'cogs')">
+            </div>
+
+            <div class="statement-row subtotal" id="row-gross">
+                <div class="row-label strong">Gross Profit</div>
+                <div class="row-calculation">Sales - COGS</div>
+                <div class="row-value" id="val-gross">—</div>
+            </div>
+
+            <div class="statement-row interactive-row" id="row-sga">
+                <div class="row-label indent">Selling & Administrative (SG&A)</div>
+                <div class="row-calculation">20% × $12.0M</div>
+                <input type="text" id="input-sga" class="interactive-input" placeholder="?" onkeypress="handleEnter(event, 'sga')">
+            </div>
+
+            <div class="statement-row subtotal" id="row-ebit">
+                <div class="row-label strong">EBIT (Operating Income)</div>
+                <div class="row-calculation">Gross - SG&A</div>
+                <div class="row-value" id="val-ebit">—</div>
+            </div>
+
+            <div class="statement-row">
+                <div class="row-label indent">Interest Expense</div>
+                <div class="row-calculation">Fixed</div>
+                <div class="row-value">$0.30</div>
+            </div>
+
+            <div class="statement-row subtotal" id="row-ebt">
+                <div class="row-label strong">EBT (Earnings Before Tax)</div>
+                <div class="row-calculation">EBIT - Interest</div>
+                <div class="row-value" id="val-ebt">—</div>
+            </div>
+
+            <div class="statement-row interactive-row" id="row-tax">
+                <div class="row-label indent">Income Taxes</div>
+                <div class="row-calculation">30% × EBT</div>
+                <input type="text" id="input-tax" class="interactive-input" placeholder="?" onkeypress="handleEnter(event, 'tax')">
+            </div>
+
+            <div class="statement-row total" id="row-ni">
+                <div class="row-label strong">NET INCOME</div>
+                <div class="row-calculation">EBT - Taxes</div>
+                <div class="row-value" id="val-ni">—</div>
+            </div>
+
+            <button class="calculate-btn" onclick="checkAnswers()" id="check-btn">Check My Calculations</button>
+            <div class="feedback" id="feedback"></div>
+
+            <div style="border-top: 2px solid var(--grey-light); margin: 20px 0; padding-top: 20px;" id="retention-section" style="display: none;">
+                <div class="statement-row">
+                    <div class="row-label">Dividends Paid</div>
+                    <div class="row-calculation">40% × Net Income</div>
+                    <div class="row-value" id="val-dividends">—</div>
+                </div>
+                <div class="statement-row subtotal">
+                    <div class="row-label strong">Addition to Retained Earnings</div>
+                    <div class="row-calculation">60% × Net Income</div>
+                    <div class="row-value" id="val-retained">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insight-card" id="insights" style="display: none;">
+            <div class="insight-title"><span class="insight-icon">💡</span>Key Insights</div>
+            <ul class="insight-list">
+                <li><strong>Forecasted profitability:</strong> Net income of $1.47M represents a 12.25% net profit margin on $12M sales</li>
+                <li><strong>Internal financing:</strong> $0.88M addition to retained earnings will help finance next year's growth</li>
+                <li><strong>Proportional method:</strong> Both COGS and SG&A scaled directly with sales, maintaining historical percentages</li>
+                <li><strong>Feed into balance sheet:</strong> The $0.88M retained earnings becomes a key input for the pro forma balance sheet</li>
+            </ul>
+        </div>
+
+        <div class="assumption-card">
+            <div class="assumption-title">⚠️ Remember the Assumptions</div>
+            <div class="assumption-text">
+                This proportional method relies on several assumptions: that <strong>margins remain stable</strong>, costs vary smoothly with sales, and capacity isn't yet constrained. In reality, firms often face <strong>step-costs</strong>—for example, adding a new plant or sales team—which make expenses jump instead of rise gradually. Always question whether historical relationships will hold in your forecast period.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let answers = {
+            cogs: 7.2,
+            sga: 2.4,
+            tax: 0.63
+        };
+
+        function handleEnter(event, field) {
+            if (event.key === 'Enter') {
+                checkAnswers();
+            }
+        }
+
+        function parseInput(value) {
+            return parseFloat(value.replace(/[$,M]/g, ''));
+        }
+
+        function checkAnswers() {
+            const cogsInput = document.getElementById('input-cogs');
+            const sgaInput = document.getElementById('input-sga');
+            const taxInput = document.getElementById('input-tax');
+            const feedback = document.getElementById('feedback');
+
+            const cogsVal = parseInput(cogsInput.value);
+            const sgaVal = parseInput(sgaInput.value);
+            const taxVal = parseInput(taxInput.value);
+
+            let correct = 0;
+            let total = 3;
+
+            // Check COGS
+            if (Math.abs(cogsVal - answers.cogs) < 0.05) {
+                cogsInput.classList.add('correct');
+                cogsInput.classList.remove('incorrect');
+                correct++;
+            } else {
+                cogsInput.classList.add('incorrect');
+                cogsInput.classList.remove('correct');
+            }
+
+            // Check SG&A
+            if (Math.abs(sgaVal - answers.sga) < 0.05) {
+                sgaInput.classList.add('correct');
+                sgaInput.classList.remove('incorrect');
+                correct++;
+            } else {
+                sgaInput.classList.add('incorrect');
+                sgaInput.classList.remove('correct');
+            }
+
+            // Check Tax
+            if (Math.abs(taxVal - answers.tax) < 0.05) {
+                taxInput.classList.add('correct');
+                taxInput.classList.remove('incorrect');
+                correct++;
+            } else {
+                taxInput.classList.add('incorrect');
+                taxInput.classList.remove('correct');
+            }
+
+            // Update calculated fields
+            if (correct === total) {
+                const gross = 12.0 - 7.2;
+                const ebit = gross - 2.4;
+                const ebt = ebit - 0.3;
+                const ni = ebt - 0.63;
+                const dividends = ni * 0.4;
+                const retained = ni * 0.6;
+
+                document.getElementById('val-gross').textContent = '$' + gross.toFixed(2);
+                document.getElementById('val-ebit').textContent = '$' + ebit.toFixed(2);
+                document.getElementById('val-ebt').textContent = '$' + ebt.toFixed(2);
+                document.getElementById('val-ni').textContent = '$' + ni.toFixed(2);
+                document.getElementById('val-dividends').textContent = '$' + dividends.toFixed(2);
+                document.getElementById('val-retained').textContent = '$' + retained.toFixed(2);
+
+                document.getElementById('retention-section').style.display = 'block';
+                document.getElementById('insights').style.display = 'block';
+
+                feedback.className = 'feedback correct show';
+                feedback.innerHTML = `<strong>Excellent work!</strong> You've correctly forecasted Evergreen's pro forma income statement:<br>
+                • COGS = $7.2M (60% of $12M sales)<br>
+                • SG&A = $2.4M (20% of $12M sales)<br>
+                • Taxes = $0.63M (30% of $2.1M EBT)<br>
+                • Net Income = $1.47M → $0.88M retained for growth`;
+
+                document.getElementById('check-btn').disabled = true;
+                document.getElementById('check-btn').textContent = '✓ Complete';
+                document.getElementById('check-btn').style.backgroundColor = 'var(--correct)';
+
+            } else if (correct > 0) {
+                feedback.className = 'feedback partial show';
+                feedback.textContent = `${correct} out of ${total} correct. Keep going! Remember: COGS = 60% × Sales, SG&A = 20% × Sales, Taxes = 30% × EBT`;
+            } else {
+                feedback.className = 'feedback show';
+                feedback.style.backgroundColor = '#f8e8e8';
+                feedback.style.borderLeftColor = 'var(--incorrect)';
+                feedback.textContent = 'Not quite yet. Use the percentages provided: multiply forecasted sales by the historical ratios for COGS and SG&A. For taxes, multiply EBT by the tax rate.';
+            }
+        }
+
+        // Auto-format inputs
+        document.querySelectorAll('.interactive-input').forEach(input => {
+            input.addEventListener('blur', function() {
+                const val = parseInput(this.value);
+                if (!isNaN(val)) {
+                    this.value = val.toFixed(2);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
